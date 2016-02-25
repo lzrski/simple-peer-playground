@@ -5,27 +5,63 @@ Peer          = require 'simple-peer'
 p1 = Peer trickle: no, initiator: yes
 p2 = Peer trickle: no
 
-p1.on 'error', (error) -> console.error error
+peer = null
+connect = (signal) ->
+  console.log 'Connecting to ', signal
 
-p1.on 'signal', (signal) -> p2.signal signal
-p2.on 'signal', (signal) -> p1.signal signal
+  peer ?= Peer trickle: no, initiator: not signal
 
-p2.on 'data', (data) -> console.log "Received", data.toString 'utf-8'
+  if signal then peer.signal JSON.parse signal
+
+  peer.on 'signal', (signal)  -> update {signal}
+  peer.on 'connect', ()       -> update connected: yes
+  peer.on 'data',   (data)    -> update {data}
+  peer.on 'error',  (error)   -> console.error error
 
 input = null
-
-Chat = (props) ->
+Connect = ({signal}) ->
   <div>
+    <h1>Connect</h1>
+    { if signal?
+      <p>Your signal is:</p>
+      <pre>{ JSON.stringify signal, null, 2}</pre>
+    }
+    <textarea
+      placeholder = 'enter peer signaling data here...'
+      ref         = { (element) -> input = element }
+      style       = { width: '100%' }
+    />
+    <button
+      onClick     = { () -> connect input.value }
+    >
+      Connect
+    </button>
+  </div>
+
+Chat = ({ message }) ->
+  <div>
+    <h1>Connected :)</h1>
+    <pre>{ message }</pre>
     <textarea
       placeholder = 'enter signaling data here...'
       ref         = { (element) -> input = element }
       style       = { width: '100%' }
     />
     <button
-      onClick     = { () -> p1.send input.value }
+      onClick     = { () -> peer.send input.value }
     >
-      Connect
+      send
     </button>
   </div>
 
-render (React.createElement Chat, {}), (document.getElementById 'app-container')
+App = ({ signal, connected, data }) ->
+  if connected or data?
+    <Chat message = { data?.toString 'utf-8' }/>
+  else
+    <Connect signal = { signal } />
+
+container = document.getElementById 'app-container'
+update = (props = {}) ->
+  render (React.createElement App, props), container
+
+do update
