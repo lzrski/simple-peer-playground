@@ -4,7 +4,7 @@
   "description": "Chat over RTC",
   "main": "build/application.js",
   "scripts": {
-    "develop": "watchify -t coffee-reactify -o build/application.js src/index.coffee",
+    "develop": "watchify -d -t coffee-reactify -o build/application.js src/index.coffee",
     "prepublish": "browserify -t coffee-reactify -o build/application.js src/index.coffee",
     "test": "mocha"
   },
