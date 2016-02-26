@@ -2,9 +2,6 @@ React         = require 'react'
 { render }    = require 'react-dom'
 Peer          = require 'simple-peer'
 
-p1 = Peer trickle: no, initiator: yes
-p2 = Peer trickle: no
-
 peer = null
 connect = (signal) ->
   console.log 'Connecting to ', signal
