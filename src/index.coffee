@@ -2,18 +2,36 @@ React         = require 'react'
 { render }    = require 'react-dom'
 Peer          = require 'simple-peer'
 
-peer = null
+messages  = []
+peer      = null
+
 connect = (signal) ->
   console.log 'Connecting to ', signal
 
-  peer ?= Peer trickle: no, initiator: not signal
+  unless peer?
+    peer = Peer trickle: no, initiator: not signal
 
   if signal then peer.signal JSON.parse signal
 
-  peer.on 'signal', (signal)  -> update {signal}
-  peer.on 'connect', ()       -> update connected: yes
-  peer.on 'data',   (data)    -> update {data}
-  peer.on 'error',  (error)   -> console.error error
+  peer.on 'signal', (signal)  ->
+    console.log 'signal'
+    update {signal}
+
+  peer.on 'connect', ()       ->
+    console.log 'connected'
+    update connected: yes
+
+  peer.on 'data',   (data)    ->
+    console.log 'received'
+    messages.push "> #{data}"
+    update { messages }
+
+  peer.on 'close', ()         ->
+    console.log 'closed'
+    update {}
+
+  peer.on 'error',  (error)   ->
+    console.error error
 
 input = null
 Connect = ({signal}) ->
@@ -38,22 +56,28 @@ Connect = ({signal}) ->
 Chat = ({ message }) ->
   <div>
     <h1>Connected :)</h1>
-    <pre>{ message }</pre>
+    { messages.map (message, index) ->
+      <pre key = { index }>{ message.toString 'utf-8' }</pre>
+    }
     <textarea
       placeholder = 'enter signaling data here...'
       ref         = { (element) -> input = element }
       style       = { width: '100%' }
     />
     <button
-      onClick     = { () -> peer.send input.value }
+      onClick     = { () ->
+        console.log 'sending'
+
+        peer.send input.value
+      }
     >
       send
     </button>
   </div>
 
-App = ({ signal, connected, data }) ->
-  if connected or data?
-    <Chat message = { data?.toString 'utf-8' }/>
+App = ({ signal, connected, messages }) ->
+  if connected or messages?.length
+    <Chat messages = { messages }/>
   else
     <Connect signal = { signal } />
 

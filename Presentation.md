@@ -118,5 +118,12 @@ Hello, there. Let's chat!
 > * In-browser communication
 > * React UI for connecting peers
 > * Inter-browser communication
-> * Multiple peers
+
+### Discover a bug!
+
+Event handlers attached twice.
+
+> TODO:
+> * Fix the bug: keep the state in check
+> * Multiple peers?
 > * Game?
