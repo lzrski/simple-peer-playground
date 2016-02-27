@@ -14,22 +14,33 @@ do reset
 initiate = () ->
   console.log 'Initiating'
 
-  peer = Peer trickle: no, initiator: yes
+  peer = Peer initiator: yes
 
-  peer.on 'signal', (signal)  ->
+  signal = []
+  peer.on 'signal', (data)  ->
     console.log 'signal'
+    console.log JSON.stringify data
+
+    signal.push data
+
     update Object.assign state, { signal, peer }
 
 
 
 connect = (signal) ->
   console.log 'Connecting'
-  peer = state.peer or Peer trickle: no, initiator: no
+  peer = state.peer or Peer initiator: no
 
-  peer.signal JSON.parse signal
+  signals = JSON.parse signal
+  peer.signal signal for signal in signals
 
-  peer.on 'signal', (signal)  ->
+  signal = []
+  peer.on 'signal', (data)  ->
     console.log 'signal'
+    console.log JSON.stringify data
+
+    signal.push data
+
     update Object.assign state, { signal, peer }
 
   peer.on 'connect', ()       ->
