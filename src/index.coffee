@@ -87,7 +87,7 @@ Chat = ({ messages }) ->
       <pre key = { index }>{ message.toString 'utf-8' }</pre>
     }
     <textarea
-      placeholder = 'enter signaling data here...'
+      placeholder = 'write something...'
       ref         = { (element) -> input = element }
       style       = { width: '100%' }
     />
