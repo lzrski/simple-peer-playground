@@ -2,44 +2,66 @@ React         = require 'react'
 { render }    = require 'react-dom'
 Peer          = require 'simple-peer'
 
-messages  = []
-peer      = null
+state = null
+reset = () -> state =
+  messages  : []
+  peer      : null
+  connected : no
+  signal    : null
 
-connect = (signal) ->
-  console.log 'Connecting to ', signal
+do reset
 
-  unless peer?
-    peer = Peer trickle: no, initiator: not signal
+initiate = () ->
+  console.log 'Initiating'
 
-  if signal then peer.signal JSON.parse signal
+  peer = Peer trickle: no, initiator: yes
 
   peer.on 'signal', (signal)  ->
     console.log 'signal'
-    update {signal}
+    update Object.assign state, { signal, peer }
+
+
+
+connect = (signal) ->
+  console.log 'Connecting'
+  peer = state.peer or Peer trickle: no, initiator: no
+
+  peer.signal JSON.parse signal
+
+  peer.on 'signal', (signal)  ->
+    console.log 'signal'
+    update Object.assign state, { signal, peer }
 
   peer.on 'connect', ()       ->
     console.log 'connected'
-    update connected: yes
+    update Object.assign state, connected: yes
 
   peer.on 'data',   (data)    ->
-    console.log 'received'
-    messages.push "> #{data}"
-    update { messages }
+    console.log 'received data'
+    msg = "> #{data.toString 'utf-8'}"
+    state.messages.push msg
+    update state
 
   peer.on 'close', ()         ->
     console.log 'closed'
-    update {}
+    do reset
+    update state
 
   peer.on 'error',  (error)   ->
     console.error error
+
+  Object.assign state, { peer }
 
 input = null
 Connect = ({signal}) ->
   <div>
     <h1>Connect</h1>
-    { if signal?
-      <p>Your signal is:</p>
-      <pre>{ JSON.stringify signal, null, 2}</pre>
+    {
+      if signal?
+        <p>Your signal is:</p>
+        <pre>{ JSON.stringify signal, null, 2}</pre>
+      else
+        <button onClick = { initiate }>Initiate connection</button>
     }
     <textarea
       placeholder = 'enter peer signaling data here...'
@@ -53,7 +75,7 @@ Connect = ({signal}) ->
     </button>
   </div>
 
-Chat = ({ message }) ->
+Chat = ({ messages }) ->
   <div>
     <h1>Connected :)</h1>
     { messages.map (message, index) ->
@@ -68,7 +90,7 @@ Chat = ({ message }) ->
       onClick     = { () ->
         console.log 'sending'
 
-        peer.send input.value
+        state.peer.send input.value
       }
     >
       send
@@ -76,7 +98,7 @@ Chat = ({ message }) ->
   </div>
 
 App = ({ signal, connected, messages }) ->
-  if connected or messages?.length
+  if connected
     <Chat messages = { messages }/>
   else
     <Connect signal = { signal } />
