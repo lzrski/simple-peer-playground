@@ -52,6 +52,11 @@ connect = (signal) ->
 
   Object.assign state, { peer }
 
+send = (message) ->
+  state.messages.push "< #{message}"
+  state.peer.send message
+  update state
+
 input = null
 Connect = ({signal}) ->
   <div>
@@ -88,9 +93,7 @@ Chat = ({ messages }) ->
     />
     <button
       onClick     = { () ->
-        console.log 'sending'
-
-        state.peer.send input.value
+        send input.value
       }
     >
       send
