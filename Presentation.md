@@ -119,11 +119,40 @@ Hello, there. Let's chat!
 > * React UI for connecting peers
 > * Inter-browser communication
 
+---
+
 ### Discover a bug!
 
 Event handlers attached twice.
 
+---
+
+### Fix the bug
+
+![brace-your-selves.jpeg](brace-your-selves.jpeg)
+
+> TODO: Fix the bug: keep the state in check
+> Multiple steps
+
+---
+
+### Enable ICE Tricles
+
+Now there are multiple signal events emitted: one for offer / answer and several describing possible strategies for NAT traversals (candidates).
+
+To establish connection all of those need to be exchanged between peers in correct order and within limited time (~30 s).
+
+Try that :)
+
 > TODO:
-> * Fix the bug: keep the state in check
+> Make signal property of the state an array
+> On signal event push signaling data to the array
+> Make connect function accept an array and call `peer.signal` once for every item.
+
+Try that by hand - still quite difficult.
+
+That's why in so called real life we would use some kind of signaling server - a simple tool to exchange the signals.
+
+> TODO:
 > * Multiple peers?
 > * Game?
