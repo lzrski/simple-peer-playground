@@ -242,7 +242,7 @@ Do you see the numbers in the console? If so then commit.
 
 ### Time for React
 
-Before we separate the pears we should add some UI.
+Before we separate the pears we should add some UI. We will use `facebook/react` for this. It separated in two modules:
 
 ```bash
 npm install --save react react-dom
@@ -250,26 +250,126 @@ npm install --save react react-dom
 
 ---
 
-UI in react is a component that can contain other components (thus forming a tree of components). Let's start with something simple:
+### React and the DOM
+
+In browsers, there is an API called DOM: Document Object Model. What you see on your screen when you visit a web page is a `document`, and the DOM API gives you access to it.
+
+---
+
+The DOM API is rather terrible - interacting with it is slow and cumbersome.  However if you want browser to display anything it's the only way other then giving your browser entire new HTML *file*.
+
+Same for processing user interactions - like clicking a button or filling a form. Without using DOM API you can only send it to the server, process it there and send back new HTML.
+
+That is called `full page refresh` and until recently it was the only way of building web apps.
+
+---
+
+### Virtual DOM
+
+In react we very seldom use DOM API directly. In most applications it's only when you call `render` function from `react-dom` module.
+
+Other then that we use a different API called Virtual DOM. It's similar, but smarter.
+
+---
+
+### Elements
+
+Just as DOM, Virtual DOM deals mainly of `elements`.
+
+Each element has a type, like `div`, `a`, `p` etc. It also has a thing called `props` (which can affect the behavior of an element just like attributes you define in HTML). It can also have children - text or other elements.
+
+---
+
+We create an element by calling a `createElement` function from `react` module:
 
 ```javascript
 import React, { createElement } from react
 
-const App = () => createElement 'div', {}, 'Hello.'
+const link = createElement(
+  'a', // type
+  {
+    href: 'https://facebook.github.io/react/',
+    title: 'Read the docs'
+  }, // props
+  'Hello, React!' // Children
+)
 ```
 
 ---
 
-We need a place to render this tree. In `index.html` add an element for it:
+And render it using `render` function from `react-dom` module.
+
+```javascript
+const container = document.getElementById('app-container')
+render(
+  link,     // The element
+  container // Where to render it - see next slide
+)
+```
+
+---
+
+We also need a place in the document where the element is to be rendered. In `index.html` add an container for it:
 
 ```html
 <body>
 
-  <div id='app-container'><!-- The app goes here --></div>
+<div id='app-container'><!-- The app goes here --></div>
 
-  <script src="build/application.js"></script>
+<script src="build/application.js"></script>
 </body>
 ```
+
+---
+
+Now refresh a browser and you should see a link we have created in previous slide.
+
+Commit and rejoice :)
+
+---
+
+We will build our app UI as a tree of elements. Let's add two more:
+
+
+```javascript
+const link = createElement(
+  'a', // type
+  {
+    href: 'https://facebook.github.io/react/',
+    title: 'Read the docs'
+  }, // props
+  'Hello, React!' // Children
+)
+const heading = createElement('h1', {}, "It's all just elements")
+const root = createElement('div', {}, heading, link)
+render(
+  root,     // Look out! It have changed.
+  container
+)
+```
+
+---
+
+It should be familiar, because that's how you build a document using HTML. In fact, there is a thing called `JSX` that gives you a syntax for writing elements that is very similar to `HTML`. We will use it:
+
+```html
+const root = (
+  <div>
+    <h1>It's all elements</h1>
+    <a
+      title = 'Read the docs'
+      href = 'https://facebook.github.io/react/'
+    >
+      Hello, React!
+    </a>
+  </div>
+)
+```
+
+UI in react is an element that can contain other elements, called children. Let's start with something simple:
+
+---
+
 ---
 
 Back to `index.js`
@@ -289,36 +389,11 @@ Now you should see `Hello, React.` in the browser.
 
 ---
 
-### React and the DOM
 
-In browsers, there is a thing called DOM: Document Object Model.
-
-It represents the document and is primarily determined by `HTML`, `CSS` provided to the browser.
-
-The DOM has a terrible API - interacting with it is slow and cumbersome. However it's the only way to make browser display anything, or get data about user interactions (like clicking a button, filling a form).
-
----
-
-### Virtual DOM
-
-In react we very seldom talk to DOM. In most applications it's only when you call `render` method from `react-dom` module.
-
-Other then that we use a different API called Virtual DOM. It's similar, but smarter.
-
----
-
-### Elements
-
-Virtual DOM consists mainly of `elements`. Each element has a type, like `div`, `a`, `p` etc. It also has a thing called `props` (which can affect the behaviour of an element). We create an element by calling a `createElement` function from react module:
 
 ```javascript
 const el = createElement(
-  'a', // type
-  {
-    href: 'http://lori2lori.rocks/',
-    title: 'Learning Programming'
-    children: 'Learning Programming from Scratch' // Children, which is a prop
-  } // props
+
 )
 ```
 
@@ -330,6 +405,10 @@ const el = createElement(
 ### Components
 
 We can create our own components
+
+```javascript
+const App = () => createElement 'div', {}, 'Hello.'
+```
 
 ---
 
