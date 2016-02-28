@@ -286,32 +286,32 @@ In browsers, there is an API called DOM: Document Object Model. What you see on 
 
 The DOM API is rather terrible - interacting with it is slow and cumbersome.  However if you want browser to display anything it's the only way other then giving your browser entire new HTML *file*.
 
-Same for processing user interactions - like clicking a button or filling a form. Without using DOM API you can only send it to the server, process it there and send back new HTML.
+Same for processing user interactions like clicking a button or filling a form. Without DOM API you can only send it to the server, process it there and send back new HTML.
 
-That is called `full page refresh` and until recently it was the only way of building web apps.
+That is called `full page refresh cycle` and until recently it was the only way of building web apps.
 
 ---
 
 ### Virtual DOM
 
-In react we very seldom use DOM API directly. In most applications it's only when you call `render` function from `react-dom` module.
+In react we very seldom use DOM API directly. React handles it for us. In most applications it's only when you call `render` function from `react-dom` module.
 
-Other then that we use a different API called Virtual DOM. It's similar, but smarter.
+Other then that we use a different API called **Virtual DOM**. It's similar, but smarter.
 
 ---
 
 ### Elements
 
-Just as DOM, Virtual DOM deals mainly of `elements`.
+Just as DOM, Virtual DOM deals mainly with `elements`.
 
 Each element has a type, like `div`, `a`, `p` etc. It also has a thing called `props` (which can affect the behavior of an element just like attributes you define in HTML). It can also have children - text or other elements.
 
 ---
 
-We create an element by calling a `createElement` function from `react` module:
+We create an element by calling a `createElement` function from `react` module. Put following code below our P2P logic:
 
 ```javascript
-import React, { createElement } from react
+import React, { createElement } from 'react'
 
 const link = createElement(
   'a', // type
@@ -328,6 +328,8 @@ const link = createElement(
 And render it using `render` function from `react-dom` module.
 
 ```javascript
+import { render } from 'react-dom'
+
 const container = document.getElementById('app-container')
 render(
   link,     // The element
