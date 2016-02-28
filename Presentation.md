@@ -101,6 +101,8 @@ mkdir build
   src/index.coffee
 ```
 
+> TODO: babelify instead of coffee-reactify
+
 You should have a file called `build/application.js` with weird looking code. It's a bundle. Not that we reference it in our html file.
 
 ---
@@ -126,12 +128,222 @@ Hello, there. Let's chat!
 
 ### Enter Simple Peer
 
+Let's play with some P2P connectivity.
+
+We will use [feross/simple-peer][] for that:
+
+```bash
+npm install --save simple-peer
+```
+
+
 > TODO:
 > * In-browser communication
 > * React UI for connecting peers
 > * Inter-browser communication
 
+[feross/simple-peer]: https://github.com/feross/simple-peer
+
 ---
+
+### In process communication
+
+We start with two peers running in same webpage. It's not very useful on it's own, but it's a good starting point.
+
+```javascript
+import Peer from simple-peer
+
+const p1 = Peer({trickle: false, initiator: true})
+const p2 = Peer({trickle: false})
+```
+
+---
+
+### Make some noise
+
+To have some insight in the operations of peers, let's make them output logs whenever something of interest happens. They are `event-emitters`, so we need to hook into their events.
+
+```javascript
+p1.on('singal', (data) => console.log('p1 signal', data))
+p1.on('connect', () => console.log('p1 connected'))
+p1.on('data', (data) => console.log('p1 received', data))
+p1.on('error', (error) => console.error('p1 error', error))
+p1.on('close', () => console.log('p1 connection closed'))
+
+// Same for p2...
+```
+
+And reload your browser.
+
+---
+
+### Let's connect
+
+In order to connect, peers need to exchange so called signaling data. Internally they use it to find each other.
+
+The initiator peer will emit signal immediately after it's created. You should see it in the console. It's this weird looking thing:
+
+```
+{"type":"offer","sdp":"v=0\r\no=- 1363672724809654390 2 IN IP4 127.0.0.1\r\ns=-\r\nt=0 0\r\na=msid-semantic: WMS\r\nm=application 9 DTLS/SCTP 5000\r\nc=IN IP4 0.0.0.0\r\na=ice-ufrag:zeBNQizxw4zejNZa\r\na=ice-pwd:fyTyIOTAhitF1MJxxCrOMti3\r\na=fingerprint:sha-256 A2:38:96:A2:E0:F9:04:72:E1:E4:62:54:66:79:7D:B0:CC:4A:24:9A:29:A0:97:8D:FA:9C:E7:B5:52:DD:14:0B\r\na=setup:actpass\r\na=mid:data\r\na=sctpmap:5000 webrtc-datachannel 1024\r\n"}
+```
+
+Don't worry - we don't need to comprehend the meaning of this.
+
+---
+
+Instead we need to pass this signal to the other peer. Let's change the `signal` handler function of `p1`:
+
+```javascript
+p1.on('singal', (data) => {
+  console.log('p1 signal', data))
+  p2.signal(data)
+}
+```
+
+Now in the console we should see, that the `p2` is also emitting a signal. Note, that it is not the same thing we passed. In particular the `type` field is `answer` instead of `offer`.
+
+---
+
+This signal from `p2` needs to be passed to `p1` in turn.
+
+```javascript
+p2.on('singal', (data) => {
+  console.log('p2 signal', data))
+  p1.signal(data)
+}
+```
+
+At some point the connection will be established and `connect` event triggered.
+
+---
+
+Once we have a connection, let's send something. It can be anything, so let's start with a simple number:
+
+```javascript
+p1.on('connect', () => {
+  console.log('p1 connected'))
+  p1.send(42)
+}
+
+```
+
+And let p2 respond with a bigger number:
+
+```javascript
+p1.on('data', (data) => {
+  console.log('p1 received', data)
+  p2.send(data+1)
+})
+```
+
+Do you see the numbers in the console? If so then commit.
+
+---
+
+### Time for React
+
+Before we separate the pears we should add some UI.
+
+```bash
+npm install --save react react-dom
+```
+
+---
+
+UI in react is a component that can contain other components (thus forming a tree of components). Let's start with something simple:
+
+```javascript
+import React, { createElement } from react
+
+const App = () => createElement 'div', {}, 'Hello.'
+```
+
+---
+
+We need a place to render this tree. In `index.html` add an element for it:
+
+```html
+<body>
+
+  <div id='app-container'><!-- The app goes here --></div>
+
+  <script src="build/application.js"></script>
+</body>
+```
+---
+
+Back to `index.js`
+
+```javascript
+import { render } from react-dom
+
+const App = () => createElement('div', {}, 'Hello, React.')
+const container = document.getElementById('app-container')
+render(
+  createElement(App),
+  container
+)
+```
+
+Now you should see `Hello, React.` in the browser.
+
+---
+
+### React and the DOM
+
+In browsers, there is a thing called DOM: Document Object Model.
+
+It represents the document and is primarily determined by `HTML`, `CSS` provided to the browser.
+
+The DOM has a terrible API - interacting with it is slow and cumbersome. However it's the only way to make browser display anything, or get data about user interactions (like clicking a button, filling a form).
+
+---
+
+### Virtual DOM
+
+In react we very seldom talk to DOM. In most applications it's only when you call `render` method from `react-dom` module.
+
+Other then that we use a different API called Virtual DOM. It's similar, but smarter.
+
+---
+
+### Elements
+
+Virtual DOM consists mainly of `elements`. Each element has a type, like `div`, `a`, `p` etc. It also has a thing called `props` (which can affect the behaviour of an element). We create an element by calling a `createElement` function from react module:
+
+```javascript
+const el = createElement(
+  'a', // type
+  {
+    href: 'http://lori2lori.rocks/',
+    title: 'Learning Programming'
+    children: 'Learning Programming from Scratch' // Children, which is a prop
+  } // props
+)
+```
+
+---
+
+### Children prop
+
+
+### Components
+
+We can create our own components
+
+---
+
+There are two types of components:
+
+* stateless:
+
+  ```javascript
+  MyComponent = (props) => //
+  ```
+
+* stateful (not covered today)
+---
+
 
 ### Discover a bug!
 
