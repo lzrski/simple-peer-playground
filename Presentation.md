@@ -660,6 +660,40 @@ p1.on('connect', () => {
 
 ---
 
+Note that we should only display one of the forms. Either we are not connected and need a ConnectForm, but MessageForm doesn't make sense yet, or we are connected and it's the other way around.
+
+Let's keep track of the connection status:
+
+```javascript
+let connected = false
+let messages = []
+const update = (message) => {
+  messages = messages.concat(message)
+  if (message === 'connected') { connected = true }
+  // ...
+}
+```
+
+---
+
+And use it in Root component logic:
+
+```javascript
+const Root = (props) => (
+  <div>
+    { !props.connected ? <ConnectForm /> : "" }
+    {
+      props.messages.map((message) => <p>{ message }</p>)
+    }
+    { props.connected ? <MessageForm /> : "" }
+  </div>
+)
+```
+
+> NOTE: What you see are ternary operators (`x ? y : z`)
+
+---
+
 > TODO:
 > * React UI for connecting peers
 > * Inter-browser communication
