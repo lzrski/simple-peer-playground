@@ -213,9 +213,9 @@ Instead we need to pass this signal to the other peer. Let's change the `signal`
 
 ```javascript
 p1.on('signal', (data) => {
-  console.log('p1 signal', data))
+  console.log('p1 signal', data)
   p2.signal(data)
-}
+})
 ```
 
 Now in the console we should see, that the `p2` is also emitting a signal. Note, that it is not the same thing we passed. In particular the `type` field is `answer` instead of `offer`.
@@ -226,12 +226,12 @@ This signal from `p2` needs to be passed to `p1` in turn.
 
 ```javascript
 p2.on('signal', (data) => {
-  console.log('p2 signal', data))
+  console.log('p2 signal', data)
   p1.signal(data)
-}
+})
 ```
 
-At some point the connection will be established and `connect` event triggered.
+At some point the connection will be established and `connect` events triggered.
 
 ---
 
