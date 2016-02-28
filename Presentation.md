@@ -308,7 +308,7 @@ Each element has a type, like `div`, `a`, `p` etc. It also has a thing called `p
 
 ---
 
-We create an element by calling a `createElement` function from `react` module. Put following code below our P2P logic:
+We create an element by calling a `createElement` function from `react` module. Put following code **above** our P2P logic:
 
 ```javascript
 import React, { createElement } from 'react'
@@ -401,9 +401,149 @@ render(root, container)
 
 ### Being reactive
 
-Remember our peers? The `p1` and `p2` guys?
+Remember our peers? The `p1` and `p2` guys? Let's make our UI react to the changes in the state of `p1` peer. First we need to record them. Let's create an array for that and call it `messages`, and also a helper function that will update the array.
 
-Let's make our UI react to the changes in the state of `p1` peer.
+```javascript
+const p1 = Peer({trickle: false, initiator: true})
+const p2 = Peer({trickle: false})
+
+let messages = []
+const update = (message) => {
+  messages = messages.concat(message)
+}
+```
+
+---
+
+Next let's populate this array with messages:
+
+```javascript
+p1.on('signal', (data) => {
+  console.log('p1 signal', data)
+  update('signal')
+  update(JSON.stringify(data))
+  p2.signal(data)
+})
+```
+
+---
+
+```javascript
+p1.on('connect', () => {
+  console.log('p1 connected')
+  update('connected')
+  p1.send('Hello, p2. How are you?')
+})
+```
+
+---
+
+```javascript
+p1.on('data', (data) => {
+  const message = data.toString('utf-8')
+  update('> ' + message)
+  console.log('p1 received', message)
+})
+```
+
+---
+
+```javascript
+p1.on('error', (error) => {
+  update('!!! ' + error.message)
+  console.error('p1 error', error)
+})
+```
+
+---
+
+```javascript
+p1.on('close', () => {
+  update('Connection closed')
+  console.log('p1 connection closed')
+})
+```
+
+---
+
+### Update the UI
+
+We update UI by rendering entire tree. To let this happen we need a function that will return different tree depending on it's arguments. Let's call it `Root` (with capital **R**):
+
+```javascript
+const Root = (props) => {
+  return (
+    <div>
+      <h1>Hello</h1>
+      {
+        props.messages.map((message) => <p>{ message }</p>)
+      }
+    </div>
+  )
+}
+```
+
+---
+
+Note how we jump from `JSX` to `JavaScript` syntax using curly braces (`{}`).
+
+```javascript
+const Root = (props) => {
+  return ( // Here it's still JavaScript
+    <div> // and here it is JSX
+      <h1>Hello</h1>
+      { // and JavaScript again!
+        props.messages.map((message) => <p>{ message }</p>)
+      }
+    </div>
+  )
+}
+```
+
+---
+
+Then inside `update` function, let's create and render a new `root` element every time it is called:
+
+```javascript
+let messages = []
+const update = (message) => {
+  messages = messages.concat(message)
+  const root = createElement(Root, { messages })
+  render(
+    root,
+    container
+  )
+}
+```
+
+---
+
+Note that we have used `Root` function as a `type` argument to `createElement`, just as we have been doing with 'div', 'a', and 'h1' before. You can do that!
+
+This kind of function is called *stateless component* and it is often used in React development. We will use this approach later.
+
+---
+
+To make it work you have to honor a following deal: it will return single element (in our case it's an element of type 'div'):
+
+```html
+return (
+  <div>
+    ...
+  </div>
+)
+```
+
+---
+
+The `props` passed to `createElement` will be passed to your function as first argument. You can use them in your function to change what will get rendered or how it will behave. In our case we render the messages based on the props:
+
+```html
+props.messages.map((message) => <p>{ message }</p>)
+```
+
+---
+
 
 > TODO:
 > * React UI for connecting peers
