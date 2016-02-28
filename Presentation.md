@@ -17,7 +17,19 @@ git init
 npm init
 ```
 
-> TODO: .gitignore
+---
+
+# .gitignore
+
+Make sure build artifacts won't clutter your source control. Put this in your `.gitignore` file:
+
+```
+node_modules/
+build/
+npm-debug.log
+*.sublime-workspace
+.DS_Store
+```
 
 ---
 
