@@ -544,6 +544,121 @@ props.messages.map((message) => <p>{ message }</p>)
 
 ---
 
+### UI for connecting peers
+
+Our goal is to banish one of the peers from our code and connect to one running in another instance of app operated by another user somewhere on the Internet.
+
+---
+
+To be able to do that, we need a way to provide signaling data to the peer without it having direct connection to the other one. After all signaling data is needed to establish the connection in the first place.
+
+---
+
+Let's remove the line where `p1` passes signaling data to `p2`:
+
+```javascript
+p1.on('signal', (data) => {
+  console.log('p1 signal', data)
+  update('signal')
+  update(JSON.stringify(data))
+})
+```
+
+---
+
+And create a new component for supplying the signaling data to `p2`:
+
+```javascript
+let signal_input = ''
+const ConnectForm = () => (
+  <div>
+    <input
+      ref = { (el) => signal_input = el }
+      placeholder = 'Enter signaling data here...'
+    />
+    <button
+      onClick = { () => p2.signal(signal_input.value) }
+    >
+      Connect
+    </button>
+  </div>
+)
+```
+
+---
+
+At last, let's use it in our `Root` component:
+
+```javascript
+const Root = (props) => (
+  <div>
+    <ConnectForm />
+    {
+      props.messages.map((message) => <p>{ message }</p>)
+    }
+  </div>
+)
+```
+
+---
+
+Now for peers to connect you need to copy signaling data from `p1` into the form and click connect. Only then `p2` will receive it and will be able to connect.
+
+> TIP: Triple click on the signaling data should select it all.
+
+---
+
+Now, let's add an input for chat messages:
+
+```javascript
+let message_input = ''
+const MessageForm = () => (
+  <div>
+    <input
+      ref = { (el) => message_input = el }
+      placeholder = 'Enter something nice here...'
+    />
+    <button
+      onClick = { () => {
+        const message = message_input.value
+        update('< ' + message)
+        p1.send(message)
+      } }
+    >
+      Send
+    </button>
+  </div>
+)
+```
+
+---
+
+Let's use our new component:
+
+```javascript
+const Root = (props) => (
+  <div>
+    <ConnectForm />
+    {
+      props.messages.map((message) => <p>{ message }</p>)
+    }
+    <MessageForm />
+  </div>
+)
+```
+
+---
+
+and remove the line when `p1` sends a message right after it connects:
+
+```javascript
+p1.on('connect', () => {
+  console.log('p1 connected')
+  update('connected')
+})
+```
+
+---
 
 > TODO:
 > * React UI for connecting peers
