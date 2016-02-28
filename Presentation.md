@@ -17,6 +17,8 @@ git init
 npm init
 ```
 
+Just press enter for every question.
+
 ---
 
 # .gitignore
@@ -39,18 +41,9 @@ npm-debug.log
 npm install --save-dev \
   browserify \
   watchify \
-  coffee-reactify
-```
-
-> TODO: Use es2015
->
-> ```
-npm install --save-dev \
-  browserify \
-  watchify \
   babelify \
-  babel-presets-react \
-  babel-presets-es2015
+  babel-preset-react \
+  babel-preset-es2015
 ```
 
 ...and commit changes
@@ -83,10 +76,10 @@ Make some new files:
 </html>
 ```
 
-`src/index.coffee`
+`src/index.js`
 
-```coffee-script
-console.log "Hello, there. Let's chat!"
+```javascript
+console.log("Hello, there. Let's chat!")
 ```
 
 ---
@@ -94,14 +87,12 @@ console.log "Hello, there. Let's chat!"
 ### Transform and bundle our file
 
 ```bash
-mkdir build
+mkdir -p build
 ./node_modules/.bin/browserify \
-  -t coffee-reactify \
+  -t [ babelify --presets [ es2015 react ] ] \
   -o build/application.js \
-  src/index.coffee
+  src/index.js
 ```
-
-> TODO: babelify instead of coffee-reactify
 
 You should have a file called `build/application.js` with weird looking code. It's a bundle. Not that we reference it in our html file.
 
@@ -126,21 +117,48 @@ Hello, there. Let's chat!
 
 ---
 
+Let's avoid typing this terrible thing by using NPM scripts. In `package.json` find scripts section and add a new script called `build`:
+
+```json
+"scripts": {
+  "test": "echo \"Error: no test specified\" && exit 1",
+  "build": "mkdir -p build; browserify -t [ babelify --presets [ es2015 react ] ] -o build/application.js src/index.js"
+},
+```
+
+Now you can execute more friendly command:
+
+```bash
+npm run build
+```
+
+---
+
+Avoid manual recompilation every time we save a file by adding `develop` script with `watchify` command and `--debug` option for source maps:
+
+```json
+"scripts": {
+  "test": "echo \"Error: no test specified\" && exit 1",
+  "build": "mkdir -p build; browserify -t [ babelify --presets [ es2015 react ] ] -o build/application.js src/index.js",
+  "develop": "mkdir -p build; watchify -t [ babelify --presets [ es2015 react ] ] -o build/application.js --debug src/index.js"
+},
+```
+
+Now run
+
+```bash
+npm run develop
+```
+
+---
+
 ### Enter Simple Peer
 
-Let's play with some P2P connectivity.
-
-We will use [feross/simple-peer][] for that:
+Let's play with some P2P connectivity. We will use [feross/simple-peer][] for that:
 
 ```bash
 npm install --save simple-peer
 ```
-
-
-> TODO:
-> * In-browser communication
-> * React UI for connecting peers
-> * Inter-browser communication
 
 [feross/simple-peer]: https://github.com/feross/simple-peer
 
@@ -364,47 +382,26 @@ const root = (
     </a>
   </div>
 )
-```
-
-UI in react is an element that can contain other elements, called children. Let's start with something simple:
-
----
-
----
-
-Back to `index.js`
-
-```javascript
-import { render } from react-dom
-
-const App = () => createElement('div', {}, 'Hello, React.')
-const container = document.getElementById('app-container')
-render(
-  createElement(App),
-  container
-)
-```
-
-Now you should see `Hello, React.` in the browser.
-
----
-
-
-
-```javascript
-const el = createElement(
-
-)
+render(root, container)
 ```
 
 ---
 
-### Children prop
+### Being reactive
 
+Remember our peers? The `p1` and `p2` guys?
+
+Let's make our UI react to the changes in the state of `p1` peer.
+
+> TODO:
+> * React UI for connecting peers
+> * Inter-browser communication
+
+---
 
 ### Components
 
-We can create our own components
+We can create our own element types:
 
 ```javascript
 const App = () => createElement 'div', {}, 'Hello.'
