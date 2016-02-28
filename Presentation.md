@@ -169,7 +169,7 @@ npm install --save simple-peer
 We start with two peers running in same webpage. It's not very useful on it's own, but it's a good starting point.
 
 ```javascript
-import Peer from simple-peer
+import Peer from 'simple-peer'
 
 const p1 = Peer({trickle: false, initiator: true})
 const p2 = Peer({trickle: false})
@@ -182,7 +182,7 @@ const p2 = Peer({trickle: false})
 To have some insight in the operations of peers, let's make them output logs whenever something of interest happens. They are `event-emitters`, so we need to hook into their events.
 
 ```javascript
-p1.on('singal', (data) => console.log('p1 signal', data))
+p1.on('signal', (data) => console.log('p1 signal', data))
 p1.on('connect', () => console.log('p1 connected'))
 p1.on('data', (data) => console.log('p1 received', data))
 p1.on('error', (error) => console.error('p1 error', error))
@@ -212,7 +212,7 @@ Don't worry - we don't need to comprehend the meaning of this.
 Instead we need to pass this signal to the other peer. Let's change the `signal` handler function of `p1`:
 
 ```javascript
-p1.on('singal', (data) => {
+p1.on('signal', (data) => {
   console.log('p1 signal', data))
   p2.signal(data)
 }
@@ -225,7 +225,7 @@ Now in the console we should see, that the `p2` is also emitting a signal. Note,
 This signal from `p2` needs to be passed to `p1` in turn.
 
 ```javascript
-p2.on('singal', (data) => {
+p2.on('signal', (data) => {
   console.log('p2 signal', data))
   p1.signal(data)
 }
