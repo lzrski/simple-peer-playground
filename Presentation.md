@@ -235,17 +235,16 @@ At some point the connection will be established and `connect` events triggered.
 
 ---
 
-Once we have a connection, let's send something. It can be anything, so let's start with a simple number:
+Once we have a connection, let's send something. It can be anything, so let's start with a simple hello:
 
 ```javascript
 p1.on('connect', () => {
-  console.log('p1 connected'))
-  p1.send(42)
-}
-
+  console.log('p1 connected')
+  p1.send('Hello, p2. How are you?')
+})
 ```
 
-And let p2 respond with a bigger number:
+And let p2 respond with in a friendly manner:
 
 ```javascript
 p1.on('data', (data) => {
@@ -254,7 +253,18 @@ p1.on('data', (data) => {
 })
 ```
 
-Do you see the numbers in the console? If so then commit.
+Do you see the numbers in the console? Looks like some robot speech, not friendly at all.
+
+---
+
+That's because whatever is sent is converted to a thing called buffer. Fortunately it's quite easy to convert it back to a string:
+
+```
+p1.on('data', (data) => {
+  console.log('p1 received', data.toString('utf-8'))
+```
+
+How about a commit?
 
 ---
 
